@@ -21,8 +21,8 @@ RUN go build
 FROM alpine:3.16.2
 LABEL stage=deploy
 
-COPY --from=builder ./app/backend .
+COPY --from=builder ./app/local-network-overview .
 COPY --from=builder ./app/static/index.html ./static/index.html
 
 # Executable
-ENTRYPOINT [ "./backend" ]
+ENTRYPOINT [ "./local-network-overview" ]

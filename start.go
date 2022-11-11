@@ -26,7 +26,7 @@ type allHostsResponse struct {
 
 func checkSingleAvailability(host string) bool {
 	returnValue := false
-	timeout := 3 * time.Second
+	timeout := 2 * time.Second
 	conn, err := net.DialTimeout("tcp", host, timeout)
 	if err != nil {
 		returnValue = false

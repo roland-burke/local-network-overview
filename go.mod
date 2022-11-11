@@ -1,4 +1,4 @@
-module backend
+module local-network-overview
 
 go 1.17
 
