@@ -75,32 +75,26 @@ func fillHosts() {
 	hosts[5] = "192.168.178.20:80"
 }
 
+func returnCurrentState(w http.ResponseWriter, r *http.Request) {
+	json, err := json.Marshal(currentState)
+	if err != nil {
+		fmt.Printf(err.Error())
+		w.Write([]byte("Failed to marshal result: " + err.Error()))
+	} else {
+		w.Write(json)
+	}
+}
+
 func startServer() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		json, err := json.Marshal(currentState)
-
-		if err != nil {
-			fmt.Printf(err.Error())
-			w.Write([]byte("Failed to marshal result: " + err.Error()))
-		} else {
-			w.Write(json)
-		}
-
+		returnCurrentState(w, r)
 	})
 
 	http.HandleFunc("/status/now", func(w http.ResponseWriter, r *http.Request) {
 		checkAvailability()
-		json, err := json.Marshal(currentState)
-
-		if err != nil {
-			fmt.Printf(err.Error())
-			w.Write([]byte("Failed to marshal result: " + err.Error()))
-		} else {
-			w.Write(json)
-		}
-
+		returnCurrentState(w, r)
 	})
 
 	var err = http.ListenAndServe(":8081", nil)

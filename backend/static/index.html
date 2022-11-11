@@ -1,8 +1,8 @@
 <html>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
 	<h1>Lokale Systeme</h1>
-	<h2>Rasperry Pi Dienste:</h2>
+	<h2>Raspberry Pi Dienste:</h2>
 	<div class="parent">
 		<div class="status-circle" id="192.168.178.38:9100"></div><a style="font-size: 1.2rem;" href="http://pihole.pi"
 			target="_blank">Pi-hole</a><span> - </span><a href="http://192.168.178.38:9100/admin/"
@@ -15,8 +15,7 @@
 	</div>
 	<div class="parent">
 		<div class="status-circle" id="192.168.178.38:9000"></div><a style="font-size: 1.2rem;"
-			href="http://portainer.pi" target="_blank">Docker
-			Container Management</a><span> - </span><a href="http://192.168.178.38:9000/"
+			href="http://portainer.pi" target="_blank">Docker Management</a><span> - </span><a href="http://192.168.178.38:9000/"
 			target="_blank">(Alternativ)</a>
 	</div>
 	<h2>Geräte:</h2>
@@ -37,7 +36,15 @@
 	<div style="margin-top: 1.5rem;">Zuletzt aktualisiert: <span id="timestamp">Nie</span></div>
 	<button onclick="fetchStatus(true)">Aktualisieren</button>
 	<script>
-		hostList = ["192.168.178.38:9100", "192.168.178.38:8080", "192.168.178.38:9000", "192.168.178.1:80", "192.168.178.54:80", "192.168.178.20:80"]
+		const hostList = ["192.168.178.38:9100", "192.168.178.38:8080", "192.168.178.38:9000", "192.168.178.1:80", "192.168.178.54:80", "192.168.178.20:80"]
+		const red = "#d6320d"
+		const green = "#2dad38"
+
+		function formatTimeStamp(jsonData) {
+			var yearAndTimeArr = JSON.stringify(jsonData.timestamp).split("T")
+			return yearAndTimeArr[1].split("+")[0].split(".")[0] + " Uhr - " + yearAndTimeArr[0].substring(1)
+		}
+
 		function updateHtml(jsonData) {
 			if (jsonData.data == null) {
 				console.log("Check not ready");
@@ -45,30 +52,31 @@
 			}
 			for (let i = 0; i < hostList.length; i++) {
 				if (jsonData.data.find(item => item.host == hostList[i]).status === "UP") {
-					document.getElementById(hostList[i]).style.backgroundColor = "#2dad38"
+					document.getElementById(hostList[i]).style.backgroundColor = green
 				} else if (jsonData.data.find(item => item.host == hostList[i]).status === "DOWN") {
-					document.getElementById(hostList[i]).style.backgroundColor = "#d65420"
+					document.getElementById(hostList[i]).style.backgroundColor = red
 				}
 			}
-			/*
-			const timeStamp = Date.parse(jsonData.timestamp);
+
+			const timeStamp = new Date(jsonData.timestamp);
 			const tsNow = Date.now();
 
 			var diff = tsNow.valueOf() - timeStamp.valueOf();
 			var differenceString = ""
-			if (diff > 60e3){ 
+			if (diff > 60e3) {
 				differenceString = Math.floor(diff / 60e3) + 'min'
 			}
 			else {
 				differenceString = Math.floor(diff / 1e3) + 's'
-			}*/
+			}
 
-			//document.getElementById("timestamp").innerHTML = "vor " + differenceString + " - " + JSON.stringify(jsonData.timestamp)
-			var yearAndTimeArr = JSON.stringify(jsonData.timestamp).split("T")
-
-			document.getElementById("timestamp").innerHTML = yearAndTimeArr[1].split("+")[0].split(".")[0] + " Uhr - " + yearAndTimeArr[0].substring(1)
+			if (differenceString === "0s" || differenceString === "1s") {
+				document.getElementById("timestamp").innerHTML = "jetzt"
+			} else {
+				document.getElementById("timestamp").innerHTML = "vor " + differenceString + "     (" + formatTimeStamp(jsonData) + ")"
+			}
 		}
- 
+
 		function fetchStatus(fetchInstant) {
 			//let url = "http://127.0.0.1:8081/status"
 			let url = "http://" + window.location.host + "/status"
