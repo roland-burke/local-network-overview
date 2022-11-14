@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"time"
 
@@ -24,18 +23,25 @@ type allHostsResponse struct {
 	TimeStamp time.Time          `json:"timestamp"`
 }
 
-func checkSingleAvailability(host string) bool {
-	returnValue := false
-	timeout := 2 * time.Second
-	conn, err := net.DialTimeout("tcp", host, timeout)
-	if err != nil {
-		returnValue = false
-		logger.Info("'%s' not reachable (timout: %fs): %s", host, timeout.Seconds(), err.Error())
-	} else {
-		returnValue = true
-		conn.Close()
+func checkSingleAvailability(host string) int {
+	client := http.Client{
+		Timeout: 4 * time.Second,
 	}
-	return returnValue
+
+	res, err := client.Head("http://" + host)
+	if err != nil {
+		logger.Error(err.Error())
+		// Connection not established
+		return 1
+	}
+
+	if res.StatusCode >= 200 && res.StatusCode < 300 {
+		// All fine
+		return 0
+	}
+
+	// Service reachabled, but no 2xx response
+	return 2
 }
 
 func checkAvailability() {
@@ -45,12 +51,14 @@ func checkAvailability() {
 	for i := 0; i < len(hosts); i++ {
 		available := checkSingleAvailability(hosts[i])
 
-		var availValue = ""
+		var availValue = "UNKNOWN"
 
-		if available {
+		if available == 0 {
 			availValue = "UP"
-		} else {
+		} else if available == 1 {
 			availValue = "DOWN"
+		} else if available == 2 {
+			availValue = "PROBLEM"
 		}
 
 		var status = singleHostStatus{
