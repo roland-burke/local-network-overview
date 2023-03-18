@@ -9,7 +9,9 @@ import (
 	"github.com/roland-burke/rollogger"
 )
 
-var hosts [6]string
+const amountHosts = 8
+
+var hosts [amountHosts]string
 var currentState allHostsResponse
 var logger *rollogger.Log
 
@@ -28,7 +30,7 @@ func checkSingleAvailability(host string) int {
 		Timeout: 4 * time.Second,
 	}
 
-	res, err := client.Head("http://" + host)
+	res, err := client.Get("http://" + host)
 	if err != nil {
 		logger.Error(err.Error())
 		// Connection not established
@@ -45,7 +47,7 @@ func checkSingleAvailability(host string) int {
 }
 
 func checkAvailability() {
-	var hostStatusList [6]singleHostStatus
+	var hostStatusList [amountHosts]singleHostStatus
 
 	logger.Info("Start availability check...")
 	for i := 0; i < len(hosts); i++ {
@@ -76,11 +78,13 @@ func checkAvailability() {
 
 func fillHosts() {
 	hosts[0] = "192.168.178.38:8080"
-	hosts[1] = "192.168.178.38:9100"
+	hosts[1] = "192.168.178.38:9102"
 	hosts[2] = "192.168.178.38:9000"
 	hosts[3] = "192.168.178.1:80"
 	hosts[4] = "192.168.178.54:80"
 	hosts[5] = "192.168.178.20:80"
+	hosts[6] = "192.168.178.38:3000"
+	hosts[7] = "192.168.178.38:9090"
 }
 
 func returnCurrentState(w http.ResponseWriter, r *http.Request) {
