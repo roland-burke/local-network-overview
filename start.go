@@ -9,15 +9,21 @@ import (
 	"github.com/roland-burke/rollogger"
 )
 
-const amountHosts = 8
+const amountHosts = 2
 
-var hosts [amountHosts]string
+var hosts [amountHosts]netClient
 var currentState allHostsResponse
 var logger *rollogger.Log
 
 type singleHostStatus struct {
-	HostIp string `json:"host"`
-	Status string `json:"status"`
+	Client netClient `json:"client"`
+	Status string    `json:"status"`
+}
+
+type netClient struct {
+	Name            string `json:"name"`
+	AlternativeHost string `json:"altHost"`
+	HostIp          string `json:"host"`
 }
 
 type allHostsResponse struct {
@@ -25,12 +31,12 @@ type allHostsResponse struct {
 	TimeStamp time.Time          `json:"timestamp"`
 }
 
-func checkSingleAvailability(host string) int {
+func checkSingleAvailability(host netClient) int {
 	client := http.Client{
 		Timeout: 4 * time.Second,
 	}
 
-	res, err := client.Get("http://" + host)
+	res, err := client.Get("http://" + host.AlternativeHost)
 	if err != nil {
 		logger.Error(err.Error())
 		// Connection not established
@@ -64,7 +70,7 @@ func checkAvailability() {
 		}
 
 		var status = singleHostStatus{
-			HostIp: hosts[i],
+			Client: hosts[i],
 			Status: availValue,
 		}
 
@@ -77,14 +83,15 @@ func checkAvailability() {
 }
 
 func fillHosts() {
-	hosts[0] = "192.168.178.38:8080"
-	hosts[1] = "192.168.178.38:9102"
-	hosts[2] = "192.168.178.38:9000"
-	hosts[3] = "192.168.178.1:80"
-	hosts[4] = "192.168.178.54:80"
-	hosts[5] = "192.168.178.20:80"
-	hosts[6] = "192.168.178.38:3000"
-	hosts[7] = "192.168.178.38:9090"
+	hosts[0] = netClient{
+		Name:            "Fritz Box",
+		HostIp:          "fritz.box",
+		AlternativeHost: "192.168.178.1"}
+
+	hosts[1] = netClient{
+		Name:            "Homematic",
+		HostIp:          "homematic.local",
+		AlternativeHost: "192.168.178.20:8080"}
 }
 
 func returnCurrentState(w http.ResponseWriter, r *http.Request) {
