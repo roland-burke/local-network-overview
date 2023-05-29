@@ -119,21 +119,25 @@ func initConfig() confFile {
 	jsonFile, err := os.Open("conf/config.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("Cannot open file: %s", err.Error())
 		os.Exit(1)
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		logger.Error("Cannot read file: %s", err.Error())
+		os.Exit(2)
+	}
 	var configFile confFile
 
 	err = json.Unmarshal(byteValue, &configFile)
 
 	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(2)
+		logger.Error("Cannot unmarshal file: %s", err.Error())
+		os.Exit(3)
 	}
 	logger.Info("Configured with %d targets and a retry intervall of %ds.", len(configFile.Clients), configFile.RetryIntervall)
 	return configFile
