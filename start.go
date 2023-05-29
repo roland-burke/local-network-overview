@@ -9,7 +9,7 @@ import (
 	"github.com/roland-burke/rollogger"
 )
 
-const amountHosts = 2
+const amountHosts = 3
 
 var hosts [amountHosts]netClient
 var currentState allHostsResponse
@@ -22,6 +22,7 @@ type singleHostStatus struct {
 
 type netClient struct {
 	Name            string `json:"name"`
+	Group           string `json:"group"`
 	AlternativeHost string `json:"altHost"`
 	HostIp          string `json:"host"`
 }
@@ -84,14 +85,22 @@ func checkAvailability() {
 
 func fillHosts() {
 	hosts[0] = netClient{
+		Group:           "Fritz",
 		Name:            "Fritz Box",
 		HostIp:          "fritz.box",
 		AlternativeHost: "192.168.178.1"}
 
 	hosts[1] = netClient{
+		Group:           "Home-Pi",
 		Name:            "Homematic",
-		HostIp:          "homematic.local",
+		HostIp:          "homematic.pi",
 		AlternativeHost: "192.168.178.20:8080"}
+
+	hosts[2] = netClient{
+		Group:           "Home-Pi",
+		Name:            "Grafana",
+		HostIp:          "grafana.pi",
+		AlternativeHost: "192.168.178.20:3000"}
 }
 
 func returnCurrentState(w http.ResponseWriter, r *http.Request) {
