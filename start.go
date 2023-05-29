@@ -3,21 +3,26 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/roland-burke/rollogger"
 )
 
-const amountHosts = 3
-
-var hosts [amountHosts]netClient
 var currentState allHostsResponse
 var logger *rollogger.Log
+var configFile confFile
 
 type singleHostStatus struct {
 	Client netClient `json:"client"`
 	Status string    `json:"status"`
+}
+
+type confFile struct {
+	Clients        []netClient `json:"targets"`
+	RetryIntervall int         `json:"retryIntervall"`
 }
 
 type netClient struct {
@@ -39,7 +44,7 @@ func checkSingleAvailability(host netClient) int {
 
 	res, err := client.Get("http://" + host.AlternativeHost)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Info("Failed: %s", err.Error())
 		// Connection not established
 		return 1
 	}
@@ -53,11 +58,12 @@ func checkSingleAvailability(host netClient) int {
 	return 2
 }
 
-func checkAvailability() {
-	var hostStatusList [amountHosts]singleHostStatus
+func checkAvailability(hosts []netClient) {
+	var hostStatusList []singleHostStatus
 
 	logger.Info("Start availability check...")
 	for i := 0; i < len(hosts); i++ {
+		logger.Info("Check %s (%s)", hosts[i].HostIp, hosts[i].AlternativeHost)
 		available := checkSingleAvailability(hosts[i])
 
 		var availValue = "UNKNOWN"
@@ -74,33 +80,12 @@ func checkAvailability() {
 			Client: hosts[i],
 			Status: availValue,
 		}
-
-		hostStatusList[i] = status
+		hostStatusList = append(hostStatusList, status)
 	}
 	currentState = allHostsResponse{
 		Data:      hostStatusList[:],
 		TimeStamp: time.Now(),
 	}
-}
-
-func fillHosts() {
-	hosts[0] = netClient{
-		Group:           "Fritz",
-		Name:            "Fritz Box",
-		HostIp:          "fritz.box",
-		AlternativeHost: "192.168.178.1"}
-
-	hosts[1] = netClient{
-		Group:           "Home-Pi",
-		Name:            "Homematic",
-		HostIp:          "homematic.pi",
-		AlternativeHost: "192.168.178.20:8080"}
-
-	hosts[2] = netClient{
-		Group:           "Home-Pi",
-		Name:            "Grafana",
-		HostIp:          "grafana.pi",
-		AlternativeHost: "192.168.178.20:3000"}
 }
 
 func returnCurrentState(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +106,7 @@ func startServer() {
 	})
 
 	http.HandleFunc("/status/now", func(w http.ResponseWriter, r *http.Request) {
-		checkAvailability()
+		checkAvailability(configFile.Clients)
 		returnCurrentState(w, r)
 	})
 
@@ -129,16 +114,42 @@ func startServer() {
 	logger.Error(err.Error())
 }
 
+func initConfig() confFile {
+	// Open our jsonFile
+	jsonFile, err := os.Open("conf/config.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var configFile confFile
+
+	err = json.Unmarshal(byteValue, &configFile)
+
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(2)
+	}
+	logger.Info("Configured with %d targets and a retry intervall of %ds.", len(configFile.Clients), configFile.RetryIntervall)
+	return configFile
+}
+
 func main() {
 	logger = rollogger.Init(rollogger.INFO_LEVEL, true, true)
-	uptimeTicker := time.NewTicker(5 * time.Minute)
-	fillHosts()
+
+	configFile = initConfig()
+	uptimeTicker := time.NewTicker(time.Duration(configFile.RetryIntervall) * time.Second)
 
 	go func() {
 		for {
 			select {
 			case <-uptimeTicker.C:
-				go checkAvailability()
+				go checkAvailability(configFile.Clients)
 			}
 		}
 	}()

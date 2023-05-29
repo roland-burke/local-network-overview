@@ -1,0 +1,17 @@
+{
+    "targets": [
+        {
+            "group": "Group1",
+            "name": "MyService",
+            "altHost": "192.168.178.1",
+            "host": "my.host"
+        },
+        {
+            "group": "Group2",
+            "name": "MyService",
+            "altHost": "192.168.178.1:8080",
+            "host": "my2.host"
+        }
+    ],
+    "retryIntervall": 300
+}
