@@ -15,7 +15,6 @@ RUN go mod download
 # Copy files to workdir
 COPY *.go ./
 COPY static/index.html ./static/index.html
-COPY conf/ ./conf
 
 RUN go build
 
@@ -24,7 +23,6 @@ FROM alpine:3.16.2
 LABEL stage=deploy
 
 COPY --from=builder ./app/local-network-overview .
-COPY --from=builder ./app/conf ./conf
 COPY --from=builder ./app/static/index.html ./static/index.html
 
 # Executable
