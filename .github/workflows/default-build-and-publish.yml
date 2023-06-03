@@ -9,7 +9,7 @@ jobs:
   call-build-and-test-workflow:
     uses: roland-burke/workflows/.github/workflows/build-and-test-go.yml@master
 
-  build-and-push-docker-image:
+  build-and-push-docker-images:
     runs-on: ubuntu-latest
     needs: call-build-and-test-workflow
     steps:
