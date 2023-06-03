@@ -1,4 +1,4 @@
-module local-network-overview
+module github.com/roland-burke/fuel-tracker
 
 go 1.17
 
