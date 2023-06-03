@@ -9,15 +9,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/roland-burke/local-network-overview/internal/model"
 	"github.com/roland-burke/rollogger"
 )
 
-var currentState allHostsResponse
+var currentState model.AllHostsResponse
 var logger *rollogger.Log
 
 const port = "8080"
 
-func checkSingleAvailability(host netClient) int {
+func checkSingleAvailability(host model.NetClient) int {
 	client := http.Client{
 		Timeout: 4 * time.Second,
 	}
@@ -38,12 +39,12 @@ func checkSingleAvailability(host netClient) int {
 	return 2
 }
 
-func checkAvailability() allHostsResponse {
+func checkAvailability() model.AllHostsResponse {
 	loadedConfig, err := loadConfig()
 
 	if err != nil {
 		logger.Warn("Error during config load: " + err.Error())
-		return allHostsResponse{
+		return model.AllHostsResponse{
 			Status:    1,
 			StatusMsg: err.Error(),
 		}
@@ -51,7 +52,7 @@ func checkAvailability() allHostsResponse {
 
 	var hosts = loadedConfig.Clients
 
-	var hostStatusList []singleHostStatus
+	var hostStatusList []model.SingleHostStatus
 
 	logger.Info("Start availability check...")
 	for i := 0; i < len(hosts); i++ {
@@ -68,14 +69,14 @@ func checkAvailability() allHostsResponse {
 			availValue = "PROBLEM"
 		}
 
-		var status = singleHostStatus{
+		var status = model.SingleHostStatus{
 			Client: hosts[i],
 			Status: availValue,
 		}
 		hostStatusList = append(hostStatusList, status)
 	}
 
-	return allHostsResponse{
+	return model.AllHostsResponse{
 		Status:    0,
 		StatusMsg: "okay",
 		Data:      hostStatusList[:],
@@ -109,12 +110,12 @@ func startServer() {
 	logger.Error(err.Error())
 }
 
-func loadConfig() (confFile, error) {
+func loadConfig() (model.ConfFile, error) {
 	// Open our jsonFile
 	jsonFile, err := os.Open("conf/config.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		return confFile{}, errors.New("Cannot open file: " + err.Error())
+		return model.ConfFile{}, errors.New("Cannot open file: " + err.Error())
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
@@ -122,14 +123,14 @@ func loadConfig() (confFile, error) {
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		return confFile{}, errors.New("Cannot read file: " + err.Error())
+		return model.ConfFile{}, errors.New("Cannot read file: " + err.Error())
 	}
-	var configFile confFile
+	var configFile model.ConfFile
 
 	err = json.Unmarshal(byteValue, &configFile)
 
 	if err != nil {
-		return confFile{}, errors.New("Cannot unmarshal json: " + err.Error())
+		return model.ConfFile{}, errors.New("Cannot unmarshal json: " + err.Error())
 	}
 	logger.Info("Configured with %d targets and a retry intervall of %ds.", len(configFile.Clients), configFile.RetryIntervall)
 	return configFile, nil
@@ -141,7 +142,7 @@ func executeTimedRequest() {
 
 func main() {
 	logger = rollogger.Init(rollogger.INFO_LEVEL, true, true)
-	currentState = allHostsResponse{
+	currentState = model.AllHostsResponse{
 		Status:    2,
 		StatusMsg: "Check was not performed yet.",
 	}

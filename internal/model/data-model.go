@@ -2,26 +2,26 @@ package model
 
 import "time"
 
-type singleHostStatus struct {
-	Client netClient `json:"client"`
+type SingleHostStatus struct {
+	Client NetClient `json:"client"`
 	Status string    `json:"status"`
 }
 
-type confFile struct {
-	Clients        []netClient `json:"targets"`
+type ConfFile struct {
+	Clients        []NetClient `json:"targets"`
 	RetryIntervall int         `json:"retryIntervall"`
 }
 
-type netClient struct {
+type NetClient struct {
 	Name            string `json:"name"`
 	Group           string `json:"group"`
 	AlternativeHost string `json:"altHost"`
 	HostIp          string `json:"host"`
 }
 
-type allHostsResponse struct {
+type AllHostsResponse struct {
 	Status    int                `json:"status"`
 	StatusMsg string             `json:"statusMsg"`
-	Data      []singleHostStatus `json:"data"`
+	Data      []SingleHostStatus `json:"data"`
 	TimeStamp time.Time          `json:"timestamp"`
 }
