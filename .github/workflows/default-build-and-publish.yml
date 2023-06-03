@@ -6,8 +6,8 @@ on:
     tags:
       - '**'
 jobs:
-  call-workflow-2-in-local-repo:
-    uses: ./.github/workflows/build-and-test-go.yml
+  call-build-and-test-workflow:
+    uses: roland-burke/workflows.git/.github/workflows/build-and-test-go.yml
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
