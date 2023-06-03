@@ -6,21 +6,8 @@ on:
     tags:
       - '**'
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '1.20'
-
-      - name: Build
-        run: go build -v ./cmd/main
-
-      - name: Test
-        run: go test ./... -v
+  call-workflow-2-in-local-repo:
+    uses: ./.github/workflows/build-and-test-go.yml
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
