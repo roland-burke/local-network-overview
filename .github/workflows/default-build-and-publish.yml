@@ -1,5 +1,8 @@
 name: Test and publish Docker image
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
