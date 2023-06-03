@@ -1,6 +1,6 @@
 module github.com/roland-burke/network-overview
 
-go 1.17
+go 1.20
 
 require (
 	github.com/roland-burke/rollogger v1.0.1
