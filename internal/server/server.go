@@ -39,7 +39,7 @@ func checkSingleAvailability(host model.NetClient) int {
 	return 2
 }
 
-func checkAvailability() model.AllHostsResponse {
+func CheckAvailability() model.AllHostsResponse {
 	loadedConfig, err := LoadConfig()
 
 	if err != nil {
@@ -102,7 +102,7 @@ func StartServer() {
 	})
 
 	http.HandleFunc("/status/now", func(w http.ResponseWriter, r *http.Request) {
-		CurrentState = checkAvailability()
+		CurrentState = CheckAvailability()
 		returnCurrentState(w, r)
 	})
 
@@ -137,5 +137,5 @@ func LoadConfig() (model.ConfFile, error) {
 }
 
 func ExecuteTimedRequest() {
-	CurrentState = checkAvailability()
+	CurrentState = CheckAvailability()
 }
