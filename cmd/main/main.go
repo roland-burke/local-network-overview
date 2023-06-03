@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/roland-burke/local-network-overview/internal/model"
-	"github.com/roland-burke/local-network-overview/internal/server"
+	"github.com/roland-burke/network-overview/internal/model"
+	"github.com/roland-burke/network-overview/internal/server"
 	"github.com/roland-burke/rollogger"
 )
 

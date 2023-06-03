@@ -1,4 +1,4 @@
-local-network-overview
+network-overview
 conf/config.json
 deploy.sh
 /bin

@@ -17,14 +17,14 @@ COPY cmd/ ./cmd
 COPY internal/ ./internal
 COPY static/index.html ./static/index.html
 
-RUN go build -o ./local-network-overview ./cmd/main
+RUN go build -o ./network-overview ./cmd/main
 
 # Generate clean, final image for deployment
 FROM alpine:3.16.2
 LABEL stage=deploy
 
-COPY --from=builder ./app/local-network-overview .
+COPY --from=builder ./app/network-overview .
 COPY --from=builder ./app/static/index.html ./static/index.html
 
 # Executable
-ENTRYPOINT [ "./local-network-overview" ]
+ENTRYPOINT [ "./network-overview" ]

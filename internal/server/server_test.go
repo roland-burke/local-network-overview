@@ -3,7 +3,7 @@ package server
 import (
 	"testing"
 
-	"github.com/roland-burke/local-network-overview/internal/model"
+	"github.com/roland-burke/network-overview/internal/model"
 	"github.com/roland-burke/rollogger"
 	"github.com/stretchr/testify/assert"
 )

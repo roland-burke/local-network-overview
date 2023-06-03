@@ -1,4 +1,4 @@
-module github.com/roland-burke/local-network-overview
+module github.com/roland-burke/network-overview
 
 go 1.17
 
