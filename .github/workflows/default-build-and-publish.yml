@@ -7,7 +7,7 @@ on:
       - '**'
 jobs:
   call-build-and-test-workflow:
-    uses: roland-burke/workflows.git/.github/workflows/build-and-test-go.yml@master
+    uses: roland-burke/workflows/.github/workflows/build-and-test-go.yml@master
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
