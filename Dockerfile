@@ -13,11 +13,11 @@ COPY go.sum ./
 RUN go mod download
 
 # Copy files to workdir
-COPY /cmd/*.go ./
-# COPY /internal/*go ./
+COPY cmd/ ./cmd
+COPY internal/ ./internal
 COPY static/index.html ./static/index.html
 
-RUN go build ./cmd/main
+RUN go build -o ./local-network-overview ./cmd/main
 
 # Generate clean, final image for deployment
 FROM alpine:3.16.2
