@@ -14,19 +14,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.20
-      - name: Debug
-        run: echo $GITHUB_WORKSPACE; echo $GOROOT; echo $GOPATH
+          go-version: '1.20'
       
       - name: Get Dependencies
-        run: |
-          export GOPATH=$HOME/go
-          go get -d ./...
+        run: go get -d ./...
 
       - name: Build
-        run: |
-          export GOPATH=$HOME/go
-          go build -v ./cmd/main
+        run: go build -v ./cmd/main
 
       - name: Test
         run: go test ./... -v
