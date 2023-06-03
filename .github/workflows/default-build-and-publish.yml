@@ -6,8 +6,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    env:
-      GOPATH: ${{ $GITHUB_WORKSPACE }}
     steps:
       - uses: actions/checkout@v3
 
