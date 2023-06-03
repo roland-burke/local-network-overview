@@ -16,3 +16,17 @@ jobs:
 
       - name: Test
         run: go test ./... -v
+
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the Docker image
+        run: |
+          docker build . -t ghcr.io/roland-burke/local-network-overview:latest
+          docker push ghcr.io/roland-burke/local-network-overview:latest
