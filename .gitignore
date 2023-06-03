@@ -1,2 +1,4 @@
 local-network-overview
 config.json
+deploy.sh
+/bin

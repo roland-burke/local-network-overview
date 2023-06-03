@@ -13,7 +13,8 @@ COPY go.sum ./
 RUN go mod download
 
 # Copy files to workdir
-COPY *.go ./
+COPY /cmd/*.go ./
+# COPY /internal/*go ./
 COPY static/index.html ./static/index.html
 
 RUN go build
