@@ -17,7 +17,7 @@ COPY /cmd/*.go ./
 # COPY /internal/*go ./
 COPY static/index.html ./static/index.html
 
-RUN go build
+RUN go build ./cmd/main
 
 # Generate clean, final image for deployment
 FROM alpine:3.16.2
