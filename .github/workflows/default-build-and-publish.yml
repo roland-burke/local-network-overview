@@ -15,6 +15,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.20
+      - name: Debug
+        run: echo $GITHUB_WORKSPACE; echo %GOROOT; echo %GOPATH
 
       - name: Build
         run: go build -v ./cmd/main
