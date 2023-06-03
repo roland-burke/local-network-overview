@@ -34,5 +34,5 @@ jobs:
             password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/roland-burke/network-overview:$GITHUB_REF_NAME -t ghcr.io/roland-burke/network-overview: .
+          docker build -t ghcr.io/roland-burke/network-overview:$GITHUB_REF_NAME -t ghcr.io/roland-burke/network-overview:latest .
           docker push ghcr.io/roland-burke/network-overview --all-tags
