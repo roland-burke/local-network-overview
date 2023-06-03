@@ -1,0 +1,119 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+    <h1>Systeme im Netzwerk</h1>
+    <div id="content">
+        Loading...
+    </div>
+    <div style="margin-top: 1.5rem;">Zuletzt aktualisiert: <span id="timestamp">Nie</span></div>
+    <button onclick="fetchStatus(true)">Aktualisieren</button>
+    <script>
+        function updateOneTarget(singleTarget, targetsMappedByGroup) {
+            let htmlCode = "<div class=\"parent\"><div class=\"status-circle\" style=\"background-color: " + getColor(singleTarget.status) + ";\" id=\"" + singleTarget.client.altHost + "\"></div><a style=\"font-size: 1.2rem;\" href=\"" + singleTarget.client.host + "\"target=\"_blank\">" + singleTarget.client.name + "</a><span> - </span><a href=\"http://" + singleTarget.client.altHost + "\"target=\"_blank\">(Alternativ)</a></div>"
+            let currentGroup = singleTarget.client.group
+            if (targetsMappedByGroup.get(currentGroup) === undefined) {
+                targetsMappedByGroup.set(currentGroup, ["<h2>" + currentGroup + ":</h2>" + htmlCode])
+            } else {
+                targetsMappedByGroup.get(currentGroup).push(htmlCode)
+            }
+
+            document.getElementById("content").innerHTML = Array.from(targetsMappedByGroup.values()).flatMap(x => x).join("")
+        }
+
+        function updateHtml(jsonData) {
+            if (jsonData.data == null) {
+                console.log("Check not ready");
+                return;
+            }
+            // clear content
+            document.getElementById("content").innerHTML = ""
+            var targetsMappedByGroup = new Map()
+            for (let i = 0; i < jsonData.data.length; i++) {
+                updateOneTarget(jsonData.data[i], targetsMappedByGroup)
+            }
+
+            const timeStamp = new Date(jsonData.timestamp);
+            const tsNow = Date.now();
+
+            var diff = tsNow.valueOf() - timeStamp.valueOf();
+            var differenceString = ""
+            if (diff > 60e3) {
+                differenceString = Math.floor(diff / 60e3) + 'min'
+            }
+            else {
+                differenceString = Math.floor(diff / 1e3) + 's'
+            }
+
+            if (differenceString === "0s" || differenceString === "1s") {
+                document.getElementById("timestamp").innerHTML = "jetzt"
+            } else {
+                var options = { hour12: false };
+                document.getElementById("timestamp").innerHTML = "vor " + differenceString + "     (" + timeStamp.toLocaleString('de-DE', options) + " Uhr)"
+            }
+        }
+
+        function getColor(status) {
+            const red = "#d6320d"
+            const green = "#2dad38"
+            const orange = "#fcba03"
+
+            if (status === "UP") {
+                return green
+            } else if (status === "DOWN") {
+                return red
+            } else if (status === "PROBLEM") {
+                return orange
+            }
+        }
+
+        function fetchStatus(fetchInstant) {
+            //let url = "http://127.0.0.1:8081/status"
+            let url = "http://" + window.location.host + "/status"
+            if (fetchInstant) {
+                url = url + "/now"
+            }
+
+            fetch(url)
+                .then(res => res.json())
+                .then(function(out) {
+                    updateHtml(out)
+                }).catch(err => { throw err });
+
+        }
+        window.addEventListener('load', function() {
+            fetchStatus(false);
+            // Your document is loaded.
+            var fetchInterval = 5000; // 5 seconds.
+
+            // Invoke the request every 5 seconds.
+            setInterval(fetchStatus, fetchInterval);
+        });
+    </script>
+</body>
+
+<style>
+    span {
+        white-space: pre;
+    }
+
+    .parent {
+        display: flex;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+
+    .status-circle {
+        background-color: gray;
+        border-radius: 100px;
+        border: solid 2px black;
+        height: 20px;
+        width: 20px;
+        margin-right: 0.5rem;
+        display: inline-block;
+    }
+</style>
+
+
+</html>
