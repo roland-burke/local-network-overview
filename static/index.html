@@ -22,9 +22,9 @@
         }
 
         function updateHtml(jsonData) {
-            if (jsonData.data == null) {
-                console.log("Check not ready");
-                return;
+            if(jsonData.status != 0) {
+                document.getElementById("content").innerHTML = "Status: " + jsonData.statusMsg
+                return
             }
             // clear content
             document.getElementById("content").innerHTML = ""

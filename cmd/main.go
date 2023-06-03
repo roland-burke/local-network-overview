@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,8 @@ import (
 
 var currentState allHostsResponse
 var logger *rollogger.Log
-var configFile confFile
+
+const port = "8080"
 
 type singleHostStatus struct {
 	Client netClient `json:"client"`
@@ -33,6 +35,8 @@ type netClient struct {
 }
 
 type allHostsResponse struct {
+	Status    int                `json:"status"`
+	StatusMsg string             `json:"statusMsg"`
 	Data      []singleHostStatus `json:"data"`
 	TimeStamp time.Time          `json:"timestamp"`
 }
@@ -58,7 +62,19 @@ func checkSingleAvailability(host netClient) int {
 	return 2
 }
 
-func checkAvailability(hosts []netClient) {
+func checkAvailability() allHostsResponse {
+	loadedConfig, err := loadConfig()
+
+	if err != nil {
+		logger.Warn("Error during config load: " + err.Error())
+		return allHostsResponse{
+			Status:    1,
+			StatusMsg: err.Error(),
+		}
+	}
+
+	var hosts = loadedConfig.Clients
+
 	var hostStatusList []singleHostStatus
 
 	logger.Info("Start availability check...")
@@ -82,7 +98,10 @@ func checkAvailability(hosts []netClient) {
 		}
 		hostStatusList = append(hostStatusList, status)
 	}
-	currentState = allHostsResponse{
+
+	return allHostsResponse{
+		Status:    0,
+		StatusMsg: "okay",
 		Data:      hostStatusList[:],
 		TimeStamp: time.Now(),
 	}
@@ -106,21 +125,20 @@ func startServer() {
 	})
 
 	http.HandleFunc("/status/now", func(w http.ResponseWriter, r *http.Request) {
-		checkAvailability(configFile.Clients)
+		currentState = checkAvailability()
 		returnCurrentState(w, r)
 	})
 
-	var err = http.ListenAndServe(":8081", nil)
+	var err = http.ListenAndServe(":"+port, nil)
 	logger.Error(err.Error())
 }
 
-func initConfig() confFile {
+func loadConfig() (confFile, error) {
 	// Open our jsonFile
 	jsonFile, err := os.Open("conf/config.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		logger.Error("Cannot open file: %s", err.Error())
-		os.Exit(1)
+		return confFile{}, errors.New("Cannot open file: " + err.Error())
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
@@ -128,32 +146,42 @@ func initConfig() confFile {
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		logger.Error("Cannot read file: %s", err.Error())
-		os.Exit(2)
+		return confFile{}, errors.New("Cannot read file: " + err.Error())
 	}
 	var configFile confFile
 
 	err = json.Unmarshal(byteValue, &configFile)
 
 	if err != nil {
-		logger.Error("Cannot unmarshal file: %s", err.Error())
-		os.Exit(3)
+		return confFile{}, errors.New("Cannot unmarshal json: " + err.Error())
 	}
 	logger.Info("Configured with %d targets and a retry intervall of %ds.", len(configFile.Clients), configFile.RetryIntervall)
-	return configFile
+	return configFile, nil
+}
+
+func executeTimedRequest() {
+	currentState = checkAvailability()
 }
 
 func main() {
 	logger = rollogger.Init(rollogger.INFO_LEVEL, true, true)
+	currentState = allHostsResponse{
+		Status:    2,
+		StatusMsg: "Check was not performed yet.",
+	}
 
-	configFile = initConfig()
-	uptimeTicker := time.NewTicker(time.Duration(configFile.RetryIntervall) * time.Second)
+	var loadedConfig, err = loadConfig()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	uptimeTicker := time.NewTicker(time.Duration(loadedConfig.RetryIntervall) * time.Second)
 
 	go func() {
 		for {
 			select {
 			case <-uptimeTicker.C:
-				go checkAvailability(configFile.Clients)
+				go executeTimedRequest()
 			}
 		}
 	}()

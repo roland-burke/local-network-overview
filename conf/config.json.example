@@ -8,7 +8,7 @@
         },
         {
             "group": "Group2",
-            "name": "MyService",
+            "name": "AnotherService",
             "altHost": "192.168.178.1:8080",
             "host": "my2.host"
         }
