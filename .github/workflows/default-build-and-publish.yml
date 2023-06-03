@@ -17,8 +17,9 @@ jobs:
         run: echo $GITHUB_WORKSPACE; echo $GOROOT; echo $GOPATH
       
       - name: Get Dependencies
-        run: go env -w GOPATH=$HOME/go |
-             go get -d ./...
+        run: |
+          go env -w GOPATH=$HOME/go
+          go get -d ./...
 
       - name: Build
         run: go build -v ./cmd/main
