@@ -31,11 +31,14 @@ jobs:
       - name: Docker metas
         id: myMeta # you'll use this in the next step
         uses: docker/metadata-action@v3
+
         with:
           # list of Docker images to use as base name for tags
           images: |
             ghcr.io/roland-burke/network-overview
           # Docker tags based on the following events/attributes
+          lavor: |
+            latest=auto
           tags: |
             type=semver,pattern={{version}}
             type=ref,event=branch
