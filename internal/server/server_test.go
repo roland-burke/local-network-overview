@@ -15,7 +15,7 @@ func init() {
 
 func TestLoadConfig(t *testing.T) {
 	assert := assert.New(t)
-	// test
+
 	conf, err := LoadConfig()
 
 	assert.Equal(nil, err)
