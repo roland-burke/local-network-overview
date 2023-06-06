@@ -13,4 +13,4 @@ jobs:
     needs: call-build-and-test-workflow
     uses: roland-burke/workflows/.github/workflows/docker-build-and-publish.yml@master
     with:
-      image-name: .github/labeler.yml
+      image-name: network-overview
